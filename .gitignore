@@ -1,0 +1,18 @@
+# Uploaded user images
+uploads/
+
+# PHP cache
+*.cache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary
+*.tmp
+*.log
+fix_admin.php
