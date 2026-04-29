@@ -111,8 +111,9 @@ require_once __DIR__ . '/../includes/header.php';
 
       <?php if (count($allClothes) >= 2): ?>
       <form method="POST" action="outfit_save.php" id="builderForm" onsubmit="return buildSubmit()">
+        <input type="hidden" name="csrf_token" value="<?= generateCSRF() ?>">
         <div class="builder-save">
-          <input type="text" name="name" class="form-control form-control-sm" placeholder="Nosaukums..." required>
+          <input type="text" name="name" class="form-control form-control-sm" placeholder="Nosaukums..." required maxlength="100">
           <button type="submit" class="btn btn-primary btn-sm fw-semibold">
             <i class="bi bi-bookmark-plus"></i> Saglabāt
           </button>
@@ -305,6 +306,28 @@ require_once __DIR__ . '/../includes/header.php';
   display: flex; justify-content: space-between; align-items: center;
   border-top: 1px solid #f0f0f0;
 }
+/* ── Dark mode overrides ── */
+[data-bs-theme="dark"] .builder-panel {
+  background: #1e293b;
+  box-shadow: 0 4px 24px rgba(0,0,0,.35);
+}
+[data-bs-theme="dark"] .outfit-flow { background: #0f172a; }
+[data-bs-theme="dark"] .flow-slot.has-items { background: #1e293b; }
+[data-bs-theme="dark"] .flow-slot.no-items  { background: #0f172a; }
+[data-bs-theme="dark"] .flow-slot           { border-color: #334155; }
+[data-bs-theme="dark"] .flow-arrow          { border-color: #475569; background: #1e293b; color: #94a3b8; }
+[data-bs-theme="dark"] .flow-arrow:hover:not(:disabled) { border-color: #818cf8; color: #818cf8; background: #1e2a4a; }
+[data-bs-theme="dark"] .flow-img-area       { background: #1e2a3a; }
+[data-bs-theme="dark"] .flow-photo          { mix-blend-mode: normal; }
+[data-bs-theme="dark"] .flow-label          { color: #94a3b8; }
+[data-bs-theme="dark"] .flow-count          { background: #2d3748; color: #a5b4fc; }
+[data-bs-theme="dark"] .flow-include        { color: #64748b; }
+[data-bs-theme="dark"] .builder-save        { border-color: #334155; }
+[data-bs-theme="dark"] .saved-card          { background: #1e293b; box-shadow: 0 2px 12px rgba(0,0,0,.3); }
+[data-bs-theme="dark"] .saved-footer        { border-color: #334155; }
+[data-bs-theme="dark"] .saved-layer         { background: #1e293b; border-color: #334155; }
+[data-bs-theme="dark"] .saved-photo         { mix-blend-mode: normal; background: #1e2a3a; }
+[data-bs-theme="dark"] .saved-no-img        { background: #1e2a3a; }
 </style>
 
 <script>

@@ -6,6 +6,7 @@ $db   = getDB();
 
 // Mainīt lomu
 if (isset($_POST['change_role'])) {
+    verifyCSRF(SITE_URL . '/pages/admin.php');
     $uid  = (int)$_POST['uid'];
     $role = $_POST['role'] ?? 'user';
     if ($uid !== (int)$user['id'] && in_array($role, ['user','premium','admin'])) {
@@ -78,7 +79,7 @@ require_once __DIR__ . '/../includes/header.php';
       <thead class="table-dark">
         <tr>
           <th>#</th><th>Vārds</th><th>E-pasts</th><th>Loma</th>
-          <th>Apģērbi</th><th>Komb.</th><th>Reģistrēts</th><th>Darbības</th>
+          <th>Apģērbi</th><th>Komb.</th><th>Reģistrēts</th><th>Pēdējā pieslēgšanās</th><th>Darbības</th>
         </tr>
       </thead>
       <tbody>
@@ -96,9 +97,11 @@ require_once __DIR__ . '/../includes/header.php';
         <td><?= $u['clothing_count'] ?></td>
         <td><?= $u['outfit_count'] ?></td>
         <td><small><?= date('d.m.Y', strtotime($u['created_at'])) ?></small></td>
+        <td><small class="text-muted"><?= $u['last_login'] ? date('d.m.Y H:i', strtotime($u['last_login'])) : '—' ?></small></td>
         <td>
           <?php if ($u['id'] != $user['id']): ?>
           <form method="POST" class="d-inline-flex gap-1 align-items-center">
+            <input type="hidden" name="csrf_token" value="<?= generateCSRF() ?>">
             <input type="hidden" name="uid" value="<?= $u['id'] ?>">
             <select name="role" class="form-select form-select-sm" style="width:120px;">
               <option value="user"    <?= $u['role']==='user'    ?'selected':'' ?>>Lietotājs</option>

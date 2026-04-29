@@ -7,6 +7,7 @@ $db   = getDB();
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect(SITE_URL . '/pages/wardrobe.php');
 }
+verifyCSRF(SITE_URL . '/pages/wardrobe.php');
 
 $id       = (int)($_POST['id'] ?? 0);
 $name     = trim($_POST['name'] ?? '');

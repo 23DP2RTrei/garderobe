@@ -54,6 +54,22 @@ function getFlash() {
     return null;
 }
 
+function generateCSRF() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function verifyCSRF($redirectTo = null) {
+    $token = $_POST['csrf_token'] ?? '';
+    if (!$token || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+        setFlash('error', 'Drošības kļūda. Lūdzu mēģiniet vēlreiz.');
+        header('Location: ' . ($redirectTo ?? (SITE_URL . '/index.php')));
+        exit;
+    }
+}
+
 function sanitize($str) {
     return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8');
 }

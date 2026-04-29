@@ -6,6 +6,7 @@ $db   = getDB();
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCSRF(SITE_URL . '/pages/profile.php');
     $name  = trim($_POST['name'] ?? '');
     $style = trim($_POST['style_preferences'] ?? '');
     $sizes = trim($_POST['sizes'] ?? '');
@@ -54,6 +55,7 @@ require_once __DIR__ . '/../includes/header.php';
       </div>
       <?php endif; ?>
       <form method="POST">
+        <input type="hidden" name="csrf_token" value="<?= generateCSRF() ?>">
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label fw-semibold">Vārds Uzvārds *</label>

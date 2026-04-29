@@ -4,6 +4,7 @@ if (isLoggedIn()) redirect(SITE_URL . '/pages/wardrobe.php');
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCSRF(SITE_URL . '/pages/login.php');
     $email = trim($_POST['email'] ?? '');
     $pass  = $_POST['password'] ?? '';
 
@@ -14,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
         if ($user && password_verify($pass, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
+            $db->prepare("UPDATE users SET last_login=NOW() WHERE id=?")->execute([$user['id']]);
             setFlash('success', 'Laipni lūdzam atpakaļ, ' . $user['name'] . '!');
             redirect(SITE_URL . '/pages/wardrobe.php');
         } else {
@@ -55,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="alert alert-danger"><?= sanitize($error) ?></div>
         <?php endif; ?>
         <form method="POST">
+          <input type="hidden" name="csrf_token" value="<?= generateCSRF() ?>">
           <div class="mb-3">
             <label class="form-label fw-semibold">E-pasta adrese</label>
             <input type="email" name="email" class="form-control" value="<?= sanitize($_POST['email'] ?? '') ?>" placeholder="janis@example.lv" required autofocus>

@@ -409,6 +409,7 @@ body {
   aspect-ratio: 1 / 1;
   overflow: hidden;
 }
+[data-bs-theme="dark"] .piece-img-wrap { background: #1e2a3a; }
 .piece-img {
   width: 100%;
   height: 100%;
@@ -417,6 +418,7 @@ body {
   display: block;
   transition: transform .3s ease;
 }
+[data-bs-theme="dark"] .piece-img { mix-blend-mode: normal; }
 .piece-card:hover .piece-img { transform: scale(1.04); }
 
 .piece-no-img {
@@ -454,6 +456,10 @@ body {
   font-size: .9rem;
   transition: all var(--t);
   box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 .piece-btn:hover        { background: #f8fafc; color: var(--brand); transform: scale(1.12); }
 .piece-btn-del:hover    { color: #ef4444; }
@@ -651,3 +657,33 @@ body {
 @media (max-width: 480px) {
   .pieces-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── FAVORITES ── */
+.piece-btn-fav { border: none; cursor: pointer; }
+.piece-btn-fav.active { color: #e63946; }
+.piece-btn-fav.active:hover { color: #c81d2b; }
+
+.fpill-fav { color: #e63946; border-color: rgba(230,57,70,.25); background: rgba(230,57,70,.08); }
+.fpill-fav.active { background: #e63946; color: #fff; border-color: #e63946; }
+.fpill-fav:hover:not(.active) { background: rgba(230,57,70,.15); border-color: rgba(230,57,70,.4); }
+[data-bs-theme="dark"] .fpill-fav { color: #fc8181; border-color: rgba(252,129,129,.25); background: rgba(252,129,129,.08); }
+[data-bs-theme="dark"] .fpill-fav.active { background: #e63946; color: #fff; border-color: #e63946; }
+
+/* ── PAGINATION ── */
+.pagination .page-link {
+  border-radius: 10px !important;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: .84rem;
+  padding: .42rem .75rem;
+  transition: all var(--t);
+  min-width: 38px;
+  text-align: center;
+}
+.pagination .page-link:hover { background: var(--brand-subtle); color: var(--brand); border-color: var(--brand); }
+.pagination .page-item.active .page-link { background: var(--brand); border-color: var(--brand); color: #fff; }
+[data-bs-theme="dark"] .pagination .page-link { background: #1e293b; border-color: #334155; color: #94a3b8; }
+[data-bs-theme="dark"] .pagination .page-link:hover { background: rgba(129,140,248,.18); color: #818cf8; border-color: #818cf8; }
+[data-bs-theme="dark"] .pagination .page-item.active .page-link { background: #818cf8; border-color: #818cf8; color: #fff; }

@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     role ENUM('user','premium','admin') DEFAULT 'user',
     style_preferences VARCHAR(100) NULL,
     sizes VARCHAR(100) NULL,
+    last_login TIMESTAMP NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -26,6 +27,7 @@ CREATE TABLE IF NOT EXISTS clothing (
     size VARCHAR(20) NULL,
     brand VARCHAR(100) NULL,
     image_url VARCHAR(500) NULL,
+    is_favorite TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -62,3 +64,9 @@ CREATE TABLE IF NOT EXISTS ai_suggestions (
 -- Admin lietotājs (parole: Admin123!)
 INSERT INTO users (name, email, password, role) VALUES
 ('Administrators', 'admin@garderobe.lv', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- SVARĪGI: Ja datubāze jau eksistē, izpildiet šīs komandas phpMyAdmin SQL logā
+-- ─────────────────────────────────────────────────────────────────────────────
+-- ALTER TABLE users   ADD COLUMN last_login   TIMESTAMP NULL DEFAULT NULL AFTER sizes;
+-- ALTER TABLE clothing ADD COLUMN is_favorite  TINYINT(1) NOT NULL DEFAULT 0 AFTER image_url;

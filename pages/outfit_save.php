@@ -5,6 +5,7 @@ $user = getCurrentUser();
 $db   = getDB();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') redirect(SITE_URL . '/pages/outfits.php');
+verifyCSRF(SITE_URL . '/pages/outfits.php');
 
 $name     = trim($_POST['name'] ?? '');
 $clothing = $_POST['clothing'] ?? [];

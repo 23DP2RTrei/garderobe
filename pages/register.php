@@ -4,6 +4,7 @@ if (isLoggedIn()) redirect(SITE_URL . '/pages/wardrobe.php');
 
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCSRF(SITE_URL . '/pages/register.php');
     $name  = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $pass  = $_POST['password'] ?? '';
@@ -42,6 +43,12 @@ $pageTitle = 'Reģistrācija';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="<?= SITE_URL ?>/css/style.css" rel="stylesheet">
+    <script>
+      (function() {
+        var t = localStorage.getItem('garderobe-theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', t);
+      })();
+    </script>
 </head>
 <body style="background: linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); min-height:100vh; display:flex; align-items:center;">
 <div class="container py-5">
@@ -63,6 +70,7 @@ $pageTitle = 'Reģistrācija';
         </div>
         <?php endif; ?>
         <form method="POST" novalidate>
+          <input type="hidden" name="csrf_token" value="<?= generateCSRF() ?>">
           <div class="mb-3">
             <label class="form-label fw-semibold">Vārds Uzvārds</label>
             <input type="text" name="name" class="form-control" value="<?= sanitize($_POST['name'] ?? '') ?>" placeholder="Jānis Bērziņš" required>

@@ -15,6 +15,9 @@ $outfitC = (int)$outfitC->fetchColumn();
 $wornC   = $db->prepare("SELECT COALESCE(SUM(times_worn),0) FROM outfits WHERE user_id=?"); $wornC->execute([$uid]);
 $wornC   = (int)$wornC->fetchColumn();
 
+$favC    = $db->prepare("SELECT COUNT(*) FROM clothing WHERE user_id=? AND is_favorite=1"); $favC->execute([$uid]);
+$favC    = (int)$favC->fetchColumn();
+
 // Kategoriju sadalījums
 $cats = $db->prepare("SELECT category, COUNT(*) as cnt FROM clothing WHERE user_id=? GROUP BY category ORDER BY cnt DESC");
 $cats->execute([$uid]); $cats = $cats->fetchAll();
@@ -47,67 +50,52 @@ require_once __DIR__ . '/../includes/header.php';
 
 <!-- KOPSAVILKUMS -->
 <div class="row g-4 mb-4">
-  <div class="col-md-4">
+  <div class="col-6 col-md-3">
     <div class="stat-card" style="background:linear-gradient(135deg,#6c63ff,#5a52d5);">
       <div class="stat-num"><?= $total ?></div>
       <div class="fw-semibold"><i class="bi bi-bag me-1"></i>Apģērbi</div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-6 col-md-3">
     <div class="stat-card" style="background:linear-gradient(135deg,#43d8c9,#2cbfb1);">
       <div class="stat-num"><?= $outfitC ?></div>
       <div class="fw-semibold"><i class="bi bi-layers me-1"></i>Kombinācijas</div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-6 col-md-3">
     <div class="stat-card" style="background:linear-gradient(135deg,#ff6584,#e8446a);">
       <div class="stat-num"><?= $wornC ?></div>
       <div class="fw-semibold"><i class="bi bi-repeat me-1"></i>Kopā valkāts</div>
     </div>
   </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+      <div class="stat-num"><?= $favC ?></div>
+      <div class="fw-semibold"><i class="bi bi-heart-fill me-1"></i>Mīļākie</div>
+    </div>
+  </div>
 </div>
 
 <div class="row g-4">
-  <!-- KATEGORIJAS -->
+  <!-- KATEGORIJAS GRAFIKS -->
   <div class="col-md-6">
     <div class="card p-4">
-      <h5 class="fw-bold mb-3"><i class="bi bi-tag me-2 text-primary"></i>Kategoriju sadalījums</h5>
-      <?php if ($cats): foreach ($cats as $row):
-        $pct = $total > 0 ? round($row['cnt']/$total*100) : 0; ?>
-      <div class="mb-2">
-        <div class="d-flex justify-content-between mb-1">
-          <span><?= sanitize($row['category']) ?></span>
-          <small class="text-muted"><?= $row['cnt'] ?> (<?= $pct ?>%)</small>
-        </div>
-        <div class="progress" style="height:8px;border-radius:4px;">
-          <div class="progress-bar" style="width:<?= $pct ?>%;background:#6c63ff;border-radius:4px;"></div>
-        </div>
-      </div>
-      <?php endforeach; else: ?>
+      <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill me-2 text-primary"></i>Kategoriju sadalījums</h5>
+      <?php if ($cats): ?>
+      <canvas id="catChart" height="220"></canvas>
+      <?php else: ?>
       <p class="text-muted">Nav datu.</p>
       <?php endif; ?>
     </div>
   </div>
 
-  <!-- SEZONAS -->
+  <!-- SEZONAS GRAFIKS -->
   <div class="col-md-6">
     <div class="card p-4">
-      <h5 class="fw-bold mb-3"><i class="bi bi-sun me-2 text-warning"></i>Sezonu sadalījums</h5>
-      <?php
-      $seasonColors = ['spring'=>'#28a745','summer'=>'#fd7e14','autumn'=>'#dc3545','winter'=>'#007bff','all'=>'#6f42c1'];
-      if ($seasons): foreach ($seasons as $row):
-        $pct = $total > 0 ? round($row['cnt']/$total*100) : 0;
-        $col = $seasonColors[$row['season']] ?? '#6c63ff'; ?>
-      <div class="mb-2">
-        <div class="d-flex justify-content-between mb-1">
-          <span><?= $seasonLabels[$row['season']] ?? $row['season'] ?></span>
-          <small class="text-muted"><?= $row['cnt'] ?> (<?= $pct ?>%)</small>
-        </div>
-        <div class="progress" style="height:8px;border-radius:4px;">
-          <div class="progress-bar" style="width:<?= $pct ?>%;background:<?= $col ?>;border-radius:4px;"></div>
-        </div>
-      </div>
-      <?php endforeach; else: ?>
+      <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart-fill me-2 text-warning"></i>Sezonu sadalījums</h5>
+      <?php if ($seasons): ?>
+      <canvas id="seasonChart" height="220"></canvas>
+      <?php else: ?>
       <p class="text-muted">Nav datu.</p>
       <?php endif; ?>
     </div>
@@ -192,6 +180,74 @@ require_once __DIR__ . '/../includes/header.php';
     <p class="mb-0">Lejupielādējiet garderobes statistiku un pārskatu PDF formātā. Jautājiet administratoram par Premium aktivizāciju.</p>
   </div>
 </div>
+<?php endif; ?>
+
+<?php if ($cats || $seasons): ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+  var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+  var textColor = isDark ? '#94a3b8' : '#6c757d';
+  var gridColor = isDark ? 'rgba(148,163,184,.15)' : 'rgba(0,0,0,.07)';
+  Chart.defaults.color = textColor;
+
+  <?php if ($cats): ?>
+  new Chart(document.getElementById('catChart'), {
+    type: 'bar',
+    data: {
+      labels: <?= json_encode(array_column($cats, 'category')) ?>,
+      datasets: [{
+        label: 'Apģērbi',
+        data:  <?= json_encode(array_column($cats, 'cnt')) ?>,
+        backgroundColor: 'rgba(108,99,255,.75)',
+        borderColor: '#6c63ff',
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: textColor } },
+        y: { grid: { color: gridColor }, ticks: { color: textColor, precision: 0 }, beginAtZero: true }
+      }
+    }
+  });
+  <?php endif; ?>
+
+  <?php if ($seasons):
+    $seasonColors = ['spring'=>'#28a745','summer'=>'#fd7e14','autumn'=>'#e8446a','winter'=>'#4e9af1','all'=>'#9f7aea'];
+    $sLabels = []; $sCounts = []; $sColors = [];
+    foreach ($seasons as $r) {
+      $sLabels[] = $seasonLabels[$r['season']] ?? $r['season'];
+      $sCounts[] = $r['cnt'];
+      $sColors[] = $seasonColors[$r['season']] ?? '#6c63ff';
+    }
+  ?>
+  new Chart(document.getElementById('seasonChart'), {
+    type: 'doughnut',
+    data: {
+      labels: <?= json_encode($sLabels) ?>,
+      datasets: [{
+        data: <?= json_encode($sCounts) ?>,
+        backgroundColor: <?= json_encode($sColors) ?>,
+        borderWidth: 2,
+        borderColor: isDark ? '#1e293b' : '#fff',
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '62%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: textColor, padding: 14, font: { size: 12 } } }
+      }
+    }
+  });
+  <?php endif; ?>
+})();
+</script>
 <?php endif; ?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

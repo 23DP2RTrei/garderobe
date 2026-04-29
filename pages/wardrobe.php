@@ -12,11 +12,15 @@ $category = $_GET['category']      ?? '';
 $season   = $_GET['season']        ?? '';
 $color    = trim($_GET['color']    ?? '');
 $sort     = $_GET['sort']          ?? 'newest';
+$fav      = $_GET['fav']           ?? '';
+$perPage  = 12;
+$page     = max(1, (int)($_GET['page'] ?? 1));
 
 if ($search)   { $where[] = "c.name LIKE ?";   $params[] = "%$search%"; }
 if ($category) { $where[] = "c.category = ?";  $params[] = $category; }
 if ($season)   { $where[] = "c.season = ?";    $params[] = $season; }
 if ($color)    { $where[] = "c.color LIKE ?";  $params[] = "%$color%"; }
+if ($fav === '1') { $where[] = "c.is_favorite = 1"; }
 
 $orderBy = match($sort) {
     'name'   => 'c.name ASC',
@@ -24,7 +28,17 @@ $orderBy = match($sort) {
     default  => 'c.created_at DESC',
 };
 
-$sql = "SELECT c.* FROM clothing c WHERE " . implode(' AND ', $where) . " ORDER BY $orderBy";
+$whereStr = implode(' AND ', $where);
+
+// Count filtered
+$countStmt = $db->prepare("SELECT COUNT(*) FROM clothing c WHERE $whereStr");
+$countStmt->execute($params);
+$totalFiltered = (int)$countStmt->fetchColumn();
+$totalPages = max(1, (int)ceil($totalFiltered / $perPage));
+$page = min($page, $totalPages);
+$offset = ($page - 1) * $perPage;
+
+$sql = "SELECT c.* FROM clothing c WHERE $whereStr ORDER BY $orderBy LIMIT $perPage OFFSET $offset";
 $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $clothes = $stmt->fetchAll();
@@ -53,6 +67,21 @@ if (isset($_GET['delete'])) {
     setFlash('success', 'Apģērbs dzēsts.');
     redirect(SITE_URL . '/pages/wardrobe.php');
 }
+
+// Build shared query string for pagination links
+function buildQ(array $override = []): string {
+    global $search, $category, $season, $sort, $fav, $page;
+    $base = array_filter([
+        'search'   => $search,
+        'category' => $category,
+        'season'   => $season,
+        'sort'     => $sort !== 'newest' ? $sort : '',
+        'fav'      => $fav,
+        'page'     => $page > 1 ? (string)$page : '',
+    ]);
+    $merged = array_filter(array_merge($base, $override));
+    return $merged ? '?' . http_build_query($merged) : '';
+}
 ?>
 
 <!-- APP BAR -->
@@ -80,33 +109,36 @@ if (isset($_GET['delete'])) {
   <?php if ($category): ?><input type="hidden" name="category" value="<?= sanitize($category) ?>"><?php endif; ?>
   <?php if ($season):   ?><input type="hidden" name="season"   value="<?= sanitize($season) ?>"><?php endif; ?>
   <?php if ($sort !== 'newest'): ?><input type="hidden" name="sort" value="<?= sanitize($sort) ?>"><?php endif; ?>
+  <?php if ($fav):      ?><input type="hidden" name="fav"      value="1"><?php endif; ?>
   <div class="search-wrap">
     <i class="bi bi-search search-icon"></i>
     <input type="text" name="search" class="search-input" placeholder="Meklēt apģērbu..." value="<?= sanitize($search) ?>">
-    <?php if ($search || $category || $season || $color): ?>
+    <?php if ($search || $category || $season || $color || $fav): ?>
     <a href="wardrobe.php" class="search-clear"><i class="bi bi-x-lg"></i></a>
     <?php endif; ?>
   </div>
 </form>
 
 <!-- CATEGORY PILLS -->
+<?php
+$baseQ  = ($search ? '&search='.urlencode($search) : '') . ($season ? '&season='.urlencode($season) : '') . ($fav ? '&fav=1' : '');
+$catQ   = $category ? '&category='.urlencode($category) : '';
+$favQ   = $fav ? '&fav=1' : '';
+?>
 <div class="filter-pills-wrap mb-2">
-  <?php
-  $baseQ = ($search ? '&search='.urlencode($search) : '') . ($season ? '&season='.urlencode($season) : '');
-  ?>
   <a href="wardrobe.php<?= $baseQ ? '?'.ltrim($baseQ,'&') : '' ?>" class="fpill <?= !$category ? 'active' : '' ?>">Visi</a>
   <?php foreach ($allCategories as $cat): ?>
   <a href="?category=<?= urlencode($cat) ?><?= $baseQ ?>" class="fpill <?= $category===$cat ? 'active' : '' ?>"><?= sanitize($cat) ?></a>
   <?php endforeach; ?>
 </div>
 
-<!-- SEASON PILLS -->
+<!-- SEASON PILLS + SORT + FAVORITES -->
 <div class="filter-pills-wrap mb-4">
-  <?php $catQ = $category ? '&category='.urlencode($category) : ''; ?>
-  <a href="wardrobe.php<?= ($catQ||$search) ? '?'.ltrim($catQ.$baseQ,'&') : '' ?>" class="fpill fpill-sm <?= !$season ? 'active' : '' ?>">Visas sezonas</a>
+  <a href="wardrobe.php<?= ($catQ||$search||$favQ) ? '?'.ltrim($catQ.$baseQ,'&') : '' ?>" class="fpill fpill-sm <?= !$season ? 'active' : '' ?>">Visas</a>
   <?php foreach ($seasonLabels as $k=>$v): ?>
-  <a href="?season=<?= $k ?><?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?>" class="fpill fpill-sm <?= $season===$k ? 'active' : '' ?>"><?= $v ?></a>
+  <a href="?season=<?= $k ?><?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $favQ ?>" class="fpill fpill-sm <?= $season===$k ? 'active' : '' ?>"><?= $v ?></a>
   <?php endforeach; ?>
+  <a href="?fav=1<?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $season ? '&season='.urlencode($season) : '' ?>" class="fpill fpill-sm fpill-fav <?= $fav==='1' ? 'active' : '' ?>"><i class="bi bi-heart-fill me-1"></i>Mīļākie</a>
   <select name="sort" form="filterForm" class="sort-select ms-auto flex-shrink-0" onchange="document.getElementById('filterForm').submit()">
     <option value="newest" <?= $sort==='newest'?'selected':'' ?>>Jaunākie</option>
     <option value="oldest" <?= $sort==='oldest'?'selected':'' ?>>Vecākie</option>
@@ -114,13 +146,23 @@ if (isset($_GET['delete'])) {
   </select>
 </div>
 
+<!-- COUNT INFO -->
+<?php if ($totalFiltered > 0): ?>
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <small class="text-muted"><?= $totalFiltered ?> apģērbs(-i) atrasts(-i)</small>
+  <?php if ($totalPages > 1): ?>
+  <small class="text-muted">Lapa <?= $page ?> no <?= $totalPages ?></small>
+  <?php endif; ?>
+</div>
+<?php endif; ?>
+
 <!-- PIECES GRID -->
 <?php if (empty($clothes)): ?>
 <div class="empty-state">
   <i class="bi bi-bag-plus"></i>
-  <h4>Garderobe ir tukša</h4>
-  <p>Pievienojiet pirmo apģērbu, lai sāktu!</p>
-  <a href="#" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addModal">Pievienot apģērbu</a>
+  <h4><?= $fav==='1' ? 'Nav mīļāko apģērbu' : 'Garderobe ir tukša' ?></h4>
+  <p><?= $fav==='1' ? 'Nospiediet ♥ uz kāda apģērba, lai to pievienotu mīļākajiem!' : 'Pievienojiet pirmo apģērbu, lai sāktu!' ?></p>
+  <?php if (!$fav): ?><a href="#" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addModal">Pievienot apģērbu</a><?php endif; ?>
 </div>
 <?php else: ?>
 <div class="pieces-grid">
@@ -130,6 +172,20 @@ if (isset($_GET['delete'])) {
     <div class="piece-img-wrap">
       <img src="<?= UPLOAD_URL . sanitize($item['image_url']) ?>" alt="<?= sanitize($item['name']) ?>" class="piece-img" loading="lazy">
       <div class="piece-actions">
+        <!-- Favorite toggle -->
+        <form method="POST" action="toggle_favorite.php" class="d-inline">
+          <input type="hidden" name="csrf_token"     value="<?= generateCSRF() ?>">
+          <input type="hidden" name="id"             value="<?= $item['id'] ?>">
+          <input type="hidden" name="back_category"  value="<?= sanitize($category) ?>">
+          <input type="hidden" name="back_season"    value="<?= sanitize($season) ?>">
+          <input type="hidden" name="back_search"    value="<?= sanitize($search) ?>">
+          <input type="hidden" name="back_sort"      value="<?= sanitize($sort) ?>">
+          <input type="hidden" name="back_fav"       value="<?= sanitize($fav) ?>">
+          <input type="hidden" name="back_page"      value="<?= $page ?>">
+          <button type="submit" class="piece-btn piece-btn-fav <?= $item['is_favorite'] ? 'active' : '' ?>" title="<?= $item['is_favorite'] ? 'Noņemt no mīļākajiem' : 'Pievienot mīļākajiem' ?>">
+            <i class="bi bi-heart<?= $item['is_favorite'] ? '-fill' : '' ?>"></i>
+          </button>
+        </form>
         <a href="?edit=<?= $item['id'] ?>" class="piece-btn" title="Rediģēt"><i class="bi bi-pencil"></i></a>
         <a href="?delete=<?= $item['id'] ?>" class="piece-btn piece-btn-del" onclick="return confirmDelete('Dzēst šo apģērbu?')" title="Dzēst"><i class="bi bi-trash"></i></a>
       </div>
@@ -138,13 +194,29 @@ if (isset($_GET['delete'])) {
     <div class="piece-no-img">
       <i class="bi bi-image"></i>
       <div class="piece-actions">
+        <form method="POST" action="toggle_favorite.php" class="d-inline">
+          <input type="hidden" name="csrf_token"    value="<?= generateCSRF() ?>">
+          <input type="hidden" name="id"            value="<?= $item['id'] ?>">
+          <input type="hidden" name="back_category" value="<?= sanitize($category) ?>">
+          <input type="hidden" name="back_season"   value="<?= sanitize($season) ?>">
+          <input type="hidden" name="back_search"   value="<?= sanitize($search) ?>">
+          <input type="hidden" name="back_sort"     value="<?= sanitize($sort) ?>">
+          <input type="hidden" name="back_fav"      value="<?= sanitize($fav) ?>">
+          <input type="hidden" name="back_page"     value="<?= $page ?>">
+          <button type="submit" class="piece-btn piece-btn-fav <?= $item['is_favorite'] ? 'active' : '' ?>" title="<?= $item['is_favorite'] ? 'Noņemt' : 'Mīļākie' ?>">
+            <i class="bi bi-heart<?= $item['is_favorite'] ? '-fill' : '' ?>"></i>
+          </button>
+        </form>
         <a href="?edit=<?= $item['id'] ?>" class="piece-btn"><i class="bi bi-pencil"></i></a>
         <a href="?delete=<?= $item['id'] ?>" class="piece-btn piece-btn-del" onclick="return confirmDelete('Dzēst šo apģērbu?')"><i class="bi bi-trash"></i></a>
       </div>
     </div>
     <?php endif; ?>
     <div class="piece-info">
-      <div class="piece-name"><?= sanitize($item['name']) ?></div>
+      <div class="piece-name">
+        <?= sanitize($item['name']) ?>
+        <?php if ($item['is_favorite']): ?><i class="bi bi-heart-fill ms-1" style="color:#e63946;font-size:.7rem;"></i><?php endif; ?>
+      </div>
       <div class="piece-meta">
         <span class="badge-season season-<?= $item['season'] ?>"><?= $seasonLabels[$item['season']] ?></span>
         <?php if ($item['color']): ?>
@@ -155,6 +227,34 @@ if (isset($_GET['delete'])) {
   </div>
   <?php endforeach; ?>
 </div>
+
+<!-- PAGINATION -->
+<?php if ($totalPages > 1): ?>
+<nav class="mt-4 d-flex justify-content-center" aria-label="Lapas navigācija">
+  <ul class="pagination gap-1">
+    <?php if ($page > 1): ?>
+    <li class="page-item">
+      <a class="page-link" href="?page=<?= $page-1 ?><?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $season ? '&season='.urlencode($season) : '' ?><?= $sort!=='newest' ? '&sort='.urlencode($sort) : '' ?><?= $fav ? '&fav=1' : '' ?>">
+        <i class="bi bi-chevron-left"></i>
+      </a>
+    </li>
+    <?php endif; ?>
+    <?php for ($i = max(1,$page-2); $i <= min($totalPages,$page+2); $i++): ?>
+    <li class="page-item <?= $i===$page ? 'active' : '' ?>">
+      <a class="page-link" href="?page=<?= $i ?><?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $season ? '&season='.urlencode($season) : '' ?><?= $sort!=='newest' ? '&sort='.urlencode($sort) : '' ?><?= $fav ? '&fav=1' : '' ?>"><?= $i ?></a>
+    </li>
+    <?php endfor; ?>
+    <?php if ($page < $totalPages): ?>
+    <li class="page-item">
+      <a class="page-link" href="?page=<?= $page+1 ?><?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $season ? '&season='.urlencode($season) : '' ?><?= $sort!=='newest' ? '&sort='.urlencode($sort) : '' ?><?= $fav ? '&fav=1' : '' ?>">
+        <i class="bi bi-chevron-right"></i>
+      </a>
+    </li>
+    <?php endif; ?>
+  </ul>
+</nav>
+<?php endif; ?>
+
 <?php endif; ?>
 
 <!-- ADD MODAL -->
@@ -166,11 +266,12 @@ if (isset($_GET['delete'])) {
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="clothing_save.php" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="<?= generateCSRF() ?>">
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold">Nosaukums *</label>
-              <input type="text" name="name" class="form-control" placeholder="piem. Baltais krekls" required>
+              <input type="text" name="name" class="form-control" placeholder="piem. Baltais krekls" required maxlength="100">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Kategorija *</label>
@@ -183,7 +284,7 @@ if (isset($_GET['delete'])) {
             </div>
             <div class="col-md-4">
               <label class="form-label fw-semibold">Krāsa *</label>
-              <input type="text" name="color" class="form-control" placeholder="piem. Balta" required>
+              <input type="text" name="color" class="form-control" placeholder="piem. Balta" required maxlength="50">
             </div>
             <div class="col-md-4">
               <label class="form-label fw-semibold">Sezona</label>
@@ -200,7 +301,7 @@ if (isset($_GET['delete'])) {
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Zīmols</label>
-              <input type="text" name="brand" class="form-control" placeholder="piem. Zara, H&M...">
+              <input type="text" name="brand" class="form-control" placeholder="piem. Zara, H&M..." maxlength="100">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Fotoattēls</label>
@@ -233,11 +334,12 @@ if (isset($_GET['delete'])) {
       </div>
       <form method="POST" action="clothing_save.php" enctype="multipart/form-data">
         <input type="hidden" name="id" value="<?= $editItem['id'] ?>">
+        <input type="hidden" name="csrf_token" value="<?= generateCSRF() ?>">
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold">Nosaukums *</label>
-              <input type="text" name="name" class="form-control" value="<?= sanitize($editItem['name']) ?>" required>
+              <input type="text" name="name" class="form-control" value="<?= sanitize($editItem['name']) ?>" required maxlength="100">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Kategorija *</label>
@@ -249,7 +351,7 @@ if (isset($_GET['delete'])) {
             </div>
             <div class="col-md-4">
               <label class="form-label fw-semibold">Krāsa *</label>
-              <input type="text" name="color" class="form-control" value="<?= sanitize($editItem['color']) ?>" required>
+              <input type="text" name="color" class="form-control" value="<?= sanitize($editItem['color']) ?>" required maxlength="50">
             </div>
             <div class="col-md-4">
               <label class="form-label fw-semibold">Sezona</label>
@@ -270,7 +372,7 @@ if (isset($_GET['delete'])) {
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Zīmols</label>
-              <input type="text" name="brand" class="form-control" value="<?= sanitize($editItem['brand'] ?? '') ?>">
+              <input type="text" name="brand" class="form-control" value="<?= sanitize($editItem['brand'] ?? '') ?>" maxlength="100">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Jauns fotoattēls</label>
