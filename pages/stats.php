@@ -77,12 +77,13 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
 
 <div class="row g-4">
+
   <!-- KATEGORIJAS GRAFIKS -->
-  <div class="col-md-6">
-    <div class="card p-4">
+  <div class="col-lg-4 col-md-6">
+    <div class="card p-4 h-100">
       <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill me-2 text-primary"></i>Kategoriju sadalījums</h5>
       <?php if ($cats): ?>
-      <canvas id="catChart" height="220"></canvas>
+      <canvas id="catChart" height="200"></canvas>
       <?php else: ?>
       <p class="text-muted">Nav datu.</p>
       <?php endif; ?>
@@ -90,23 +91,23 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
 
   <!-- SEZONAS GRAFIKS -->
-  <div class="col-md-6">
-    <div class="card p-4">
+  <div class="col-lg-4 col-md-6">
+    <div class="card p-4 h-100">
       <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart-fill me-2 text-warning"></i>Sezonu sadalījums</h5>
       <?php if ($seasons): ?>
-      <canvas id="seasonChart" height="220"></canvas>
+      <canvas id="seasonChart" height="200"></canvas>
       <?php else: ?>
       <p class="text-muted">Nav datu.</p>
       <?php endif; ?>
     </div>
   </div>
 
-  <!-- TOP KOMBINĀCIJAS -->
-  <div class="col-md-6">
-    <div class="card p-4">
+  <!-- TOP KOMBINĀCIJAS — pārvietots augšup, blakus grafikiem -->
+  <div class="col-lg-4 col-md-12">
+    <div class="card p-4 h-100">
       <h5 class="fw-bold mb-3"><i class="bi bi-trophy me-2 text-warning"></i>Populārākās kombinācijas</h5>
       <?php if ($topOutfits): ?>
-      <table class="table table-sm table-hover">
+      <table class="table table-sm table-hover mb-0">
         <thead><tr><th>#</th><th>Nosaukums</th><th class="text-end">Valkāts</th></tr></thead>
         <tbody>
         <?php foreach ($topOutfits as $i => $o): ?>
@@ -124,27 +125,9 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
   </div>
 
-  <!-- KRĀSAS -->
-  <div class="col-md-6">
-    <div class="card p-4">
-      <h5 class="fw-bold mb-3"><i class="bi bi-palette me-2 text-danger"></i>Biežākās krāsas</h5>
-      <?php if ($colors): ?>
-      <div class="d-flex flex-wrap gap-2">
-        <?php foreach ($colors as $c): ?>
-        <span class="color-badge">
-          <?= sanitize($c['color']) ?> <span class="color-cnt"><?= $c['cnt'] ?></span>
-        </span>
-        <?php endforeach; ?>
-      </div>
-      <?php else: ?>
-      <p class="text-muted">Nav datu.</p>
-      <?php endif; ?>
-    </div>
-  </div>
-
-  <!-- PĒDĒJIE -->
-  <div class="col-12">
-    <div class="card p-4">
+  <!-- PĒDĒJIE PIEVIENOTIE -->
+  <div class="col-md-8">
+    <div class="card p-4 h-100">
       <h5 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-info"></i>Pēdējie pievienotie</h5>
       <?php if ($recent): ?>
       <table class="table table-hover mb-0">
@@ -164,6 +147,25 @@ require_once __DIR__ . '/../includes/header.php';
       <?php endif; ?>
     </div>
   </div>
+
+  <!-- KRĀSAS -->
+  <div class="col-md-4">
+    <div class="card p-4 h-100">
+      <h5 class="fw-bold mb-3"><i class="bi bi-palette me-2 text-danger"></i>Biežākās krāsas</h5>
+      <?php if ($colors): ?>
+      <div class="d-flex flex-wrap gap-2">
+        <?php foreach ($colors as $c): ?>
+        <span class="color-badge">
+          <?= sanitize($c['color']) ?> <span class="color-cnt"><?= $c['cnt'] ?></span>
+        </span>
+        <?php endforeach; ?>
+      </div>
+      <?php else: ?>
+      <p class="text-muted">Nav datu.</p>
+      <?php endif; ?>
+    </div>
+  </div>
+
 </div>
 
 <?php if (isPremium()): ?>

@@ -23,6 +23,10 @@ function getDB() {
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
+            // Auto-migrācija: pievieno jaunās kolonnas, ja tās vēl neeksistē
+            try { $pdo->exec("ALTER TABLE users         ADD COLUMN last_login    TIMESTAMP NULL DEFAULT NULL"); } catch (PDOException $e) {}
+            try { $pdo->exec("ALTER TABLE clothing      ADD COLUMN is_favorite   TINYINT(1) NOT NULL DEFAULT 0"); } catch (PDOException $e) {}
+            try { $pdo->exec("ALTER TABLE ai_suggestions ADD COLUMN clothing_ids TEXT NULL DEFAULT NULL"); } catch (PDOException $e) {}
         } catch (PDOException $e) {
             die('<div style="padding:20px;background:#fee;border:1px solid #f00;margin:20px;font-family:sans-serif;">
                 <h2>Datu bāzes kļūda</h2>

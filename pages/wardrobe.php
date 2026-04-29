@@ -119,26 +119,48 @@ function buildQ(array $override = []): string {
   </div>
 </form>
 
-<!-- CATEGORY PILLS -->
+<!-- CATEGORY & SEASON PILLS -->
 <?php
-$baseQ  = ($search ? '&search='.urlencode($search) : '') . ($season ? '&season='.urlencode($season) : '') . ($fav ? '&fav=1' : '');
-$catQ   = $category ? '&category='.urlencode($category) : '';
-$favQ   = $fav ? '&fav=1' : '';
+// Atsevišķi parametri — ērtākai URL celšanai
+$qSearch = $search   ? '&search='.urlencode($search)     : '';
+$qCat    = $category ? '&category='.urlencode($category) : '';
+$qSeason = $season   ? '&season='.urlencode($season)     : '';
+$qFav    = $fav      ? '&fav=1'                          : '';
+
+// Palīgfunkcija: savieno parametrus vienā URL
+function wUrl() {
+    $q = ltrim(implode('', func_get_args()), '&');
+    return 'wardrobe.php' . ($q ? '?' . $q : '');
+}
 ?>
+
+<!-- 1. rinda: Kategorijas -->
 <div class="filter-pills-wrap mb-2">
-  <a href="wardrobe.php<?= $baseQ ? '?'.ltrim($baseQ,'&') : '' ?>" class="fpill <?= !$category ? 'active' : '' ?>">Visi</a>
+  <a href="<?= wUrl($qSearch, $qSeason, $qFav) ?>" class="fpill <?= !$category ? 'active' : '' ?>">Visi</a>
   <?php foreach ($allCategories as $cat): ?>
-  <a href="?category=<?= urlencode($cat) ?><?= $baseQ ?>" class="fpill <?= $category===$cat ? 'active' : '' ?>"><?= sanitize($cat) ?></a>
+  <a href="<?= wUrl('&category='.urlencode($cat), $qSearch, $qSeason, $qFav) ?>" class="fpill <?= $category===$cat ? 'active' : '' ?>"><?= sanitize($cat) ?></a>
   <?php endforeach; ?>
 </div>
 
-<!-- SEASON PILLS + SORT + FAVORITES -->
+<!-- 2. rinda: Sezonas + Mīļākie + Šķirošana -->
 <div class="filter-pills-wrap mb-4">
-  <a href="wardrobe.php<?= ($catQ||$search||$favQ) ? '?'.ltrim($catQ.$baseQ,'&') : '' ?>" class="fpill fpill-sm <?= !$season ? 'active' : '' ?>">Visas</a>
-  <?php foreach ($seasonLabels as $k=>$v): ?>
-  <a href="?season=<?= $k ?><?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $favQ ?>" class="fpill fpill-sm <?= $season===$k ? 'active' : '' ?>"><?= $v ?></a>
+  <!-- "Visas" atceļ sezonu filtru -->
+  <a href="<?= wUrl($qCat, $qSearch, $qFav) ?>" class="fpill fpill-sm <?= !$season ? 'active' : '' ?>">Visas</a>
+
+  <?php foreach ($seasonLabels as $k => $v):
+    $isSeasonActive = ($season === $k);
+    // Aktīvs → klikšķis atceļ; neaktīvs → iestata šo sezonu
+    $seasonHref = $isSeasonActive ? wUrl($qCat, $qSearch, $qFav) : wUrl('&season='.$k, $qCat, $qSearch, $qFav);
+  ?>
+  <a href="<?= $seasonHref ?>" class="fpill fpill-sm <?= $isSeasonActive ? 'active' : '' ?>"><?= $v ?></a>
   <?php endforeach; ?>
-  <a href="?fav=1<?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $season ? '&season='.urlencode($season) : '' ?>" class="fpill fpill-sm fpill-fav <?= $fav==='1' ? 'active' : '' ?>"><i class="bi bi-heart-fill me-1"></i>Mīļākie</a>
+
+  <!-- Mīļākie toggle: aktīvs → noņem fav; neaktīvs → pievieno -->
+  <?php $favHref = ($fav === '1') ? wUrl($qCat, $qSearch, $qSeason) : wUrl('&fav=1', $qCat, $qSearch, $qSeason); ?>
+  <a href="<?= $favHref ?>" class="fpill fpill-sm fpill-fav <?= $fav==='1' ? 'active' : '' ?>">
+    <i class="bi bi-heart-fill me-1"></i>Mīļākie
+  </a>
+
   <select name="sort" form="filterForm" class="sort-select ms-auto flex-shrink-0" onchange="document.getElementById('filterForm').submit()">
     <option value="newest" <?= $sort==='newest'?'selected':'' ?>>Jaunākie</option>
     <option value="oldest" <?= $sort==='oldest'?'selected':'' ?>>Vecākie</option>
