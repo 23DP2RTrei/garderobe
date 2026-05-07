@@ -12,4 +12,7 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
     && echo '<Directory /var/www/html>\nAllowOverride All\nRequire all granted\n</Directory>' \
        >> /etc/apache2/apache2.conf
 
-CMD ["sh", "-c", "export PORT=${PORT:-80} && sed -i \"s/Listen 80/Listen $PORT/\" /etc/apache2/ports.conf && sed -i \"s/<VirtualHost \\*:80>/<VirtualHost *:$PORT>/\" /etc/apache2/sites-enabled/000-default.conf && apache2-foreground"]
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
