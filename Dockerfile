@@ -10,7 +10,10 @@ RUN mkdir -p /var/www/html/uploads \
 
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
     && echo '<Directory /var/www/html>\nAllowOverride All\nRequire all granted\n</Directory>' \
-       >> /etc/apache2/apache2.conf
+        >> /etc/apache2/apache2.conf
+
+# Atjauno ports.conf uz tīru stāvokli (kešu notīrīšanai)
+RUN echo "Listen 80" > /etc/apache2/ports.conf
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
