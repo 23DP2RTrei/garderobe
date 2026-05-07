@@ -7,4 +7,4 @@ WORKDIR /app
 
 RUN mkdir -p /app/uploads && chmod 777 /app/uploads
 
-CMD php -S 0.0.0.0:$PORT
+CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8080}"]
