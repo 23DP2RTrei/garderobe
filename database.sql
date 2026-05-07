@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS ai_suggestions (
     user_id BIGINT UNSIGNED NOT NULL,
     suggestion_text TEXT NOT NULL,
     season VARCHAR(20) NULL,
+    clothing_ids TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -68,5 +69,6 @@ INSERT INTO users (name, email, password, role) VALUES
 -- ─────────────────────────────────────────────────────────────────────────────
 -- SVARĪGI: Ja datubāze jau eksistē, izpildiet šīs komandas phpMyAdmin SQL logā
 -- ─────────────────────────────────────────────────────────────────────────────
--- ALTER TABLE users   ADD COLUMN last_login   TIMESTAMP NULL DEFAULT NULL AFTER sizes;
--- ALTER TABLE clothing ADD COLUMN is_favorite  TINYINT(1) NOT NULL DEFAULT 0 AFTER image_url;
+-- ALTER TABLE users         ADD COLUMN last_login    TIMESTAMP NULL DEFAULT NULL AFTER sizes;
+-- ALTER TABLE clothing      ADD COLUMN is_favorite   TINYINT(1) NOT NULL DEFAULT 0 AFTER image_url;
+-- ALTER TABLE ai_suggestions ADD COLUMN clothing_ids TEXT NULL DEFAULT NULL;

@@ -6,7 +6,7 @@
       <i class="bi bi-bag-heart-fill me-1" style="color:#818cf8;"></i>
       <strong>Garderobe</strong>
     </p>
-    <small>Roberts Treijs &copy; 2025 &middot; Rīgas Valsts Tehnikums</small>
+    <small>Roberts Treijs &copy; 2026 &middot; Rīgas Valsts Tehnikums</small>
   </div>
 </footer>
 
