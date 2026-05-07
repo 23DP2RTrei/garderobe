@@ -1,8 +1,7 @@
 -- Digitālās garderobes pārvaldības sistēma
 -- Datu bāzes shēma
-
-CREATE DATABASE IF NOT EXISTS garderobe CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE garderobe;
+-- Piezīme: uz shared hostinga (InfinityFree u.c.) neizmanto CREATE DATABASE / USE —
+-- importē tieši savā datubāzē caur phpMyAdmin.
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
