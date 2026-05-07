@@ -1,11 +1,13 @@
 <?php
 // Datu bāzes savienojuma konfigurācija
-// Mainiet šīs vērtības atbilstoši jūsu serverim
+// Akreditācijas dati tiek nolasīti no vides mainīgajiem (Railway),
+// ar noklusējuma vērtībām lokālajai izstrādei.
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'garderobe');
-define('DB_USER', 'root');       // Mainiet uz savu lietotāju
-define('DB_PASS', '');           // Mainiet uz savu paroli
+define('DB_HOST',    getenv('MYSQLHOST')     ?: 'localhost');
+define('DB_PORT',    getenv('MYSQLPORT')     ?: '3306');
+define('DB_NAME',    getenv('MYSQLDATABASE') ?: 'garderobe');
+define('DB_USER',    getenv('MYSQLUSER')     ?: 'root');
+define('DB_PASS',    getenv('MYSQLPASSWORD') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 define('SITE_NAME', 'Garderobe');
@@ -17,7 +19,7 @@ function getDB() {
     static $pdo = null;
     if ($pdo === null) {
         try {
-            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+            $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
             $pdo = new PDO($dsn, DB_USER, DB_PASS, [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
