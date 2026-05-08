@@ -30,7 +30,7 @@ $imageUrl = null;
 if (!empty($_FILES['image']['name'])) {
     $imageUrl = uploadImage($_FILES['image']);
     if (!$imageUrl) {
-        setFlash('error', 'Attēla augšupielāde neizdevās. Atļautie formāti: JPG, PNG, GIF, WEBP. Maks. 5MB.');
+        setFlash('error', 'Attēla augšupielāde neizdevās. Atļautie formāti: JPG, PNG, GIF, WEBP. Maks. 15MB.');
         redirect(SITE_URL . '/pages/wardrobe.php');
     }
 }
