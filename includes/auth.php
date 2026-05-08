@@ -77,8 +77,8 @@ function sanitize($str) {
 function uploadImage($file) {
     if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) return null;
     $allowed = ['image/jpeg','image/png','image/gif','image/webp'];
-    if (!in_array($file['type'], $allowed)) return null;
-    if ($file['size'] > 5 * 1024 * 1024) return null;
+    if (!in_array(strtolower($file['type']), $allowed)) return null;
+    if ($file['size'] > 15 * 1024 * 1024) return null;
     if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR, 0755, true);
 
     $filename = uniqid('img_', true) . '.png';
