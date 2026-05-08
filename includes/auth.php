@@ -121,37 +121,51 @@ function processClothingImage($srcPath, $mime, $destPath) {
     imagecopyresampled($out, $src, 0, 0, 0, 0, $nw, $nh, $ow, $oh);
     imagedestroy($src);
 
-    // Sample corner pixels to detect background color
-    $corners = [
-        imagecolorat($out, 0, 0),
-        imagecolorat($out, $nw - 1, 0),
-        imagecolorat($out, 0, $nh - 1),
-        imagecolorat($out, $nw - 1, $nh - 1),
-    ];
+    // Sample edge pixels to detect background color (any color)
+    $samples = [];
+    $step = max(1, (int)min($nw, $nh) / 16);
+    for ($i = 0; $i < $nw; $i += $step) {
+        $samples[] = imagecolorat($out, $i, 0);
+        $samples[] = imagecolorat($out, $i, $nh - 1);
+    }
+    for ($i = 0; $i < $nh; $i += $step) {
+        $samples[] = imagecolorat($out, 0, $i);
+        $samples[] = imagecolorat($out, $nw - 1, $i);
+    }
     $br = $bg = $bb = 0;
-    foreach ($corners as $c) {
+    foreach ($samples as $c) {
         $br += ($c >> 16) & 0xFF;
         $bg += ($c >> 8)  & 0xFF;
         $bb +=  $c        & 0xFF;
     }
-    $br = (int)($br / 4);
-    $bg = (int)($bg / 4);
-    $bb = (int)($bb / 4);
+    $n  = count($samples);
+    $br = (int)($br / $n);
+    $bg = (int)($bg / $n);
+    $bb = (int)($bb / $n);
 
-    // Only remove background if corners are light-coloured (white/grey/cream)
-    if ($br > 170 && $bg > 170 && $bb > 170) {
-        $tolerance = 42;
-        for ($y = 0; $y < $nh; $y++) {
-            for ($x = 0; $x < $nw; $x++) {
-                $c  = imagecolorat($out, $x, $y);
-                $r  = ($c >> 16) & 0xFF;
-                $g  = ($c >> 8)  & 0xFF;
-                $b  =  $c        & 0xFF;
-                $dist = abs($r - $br) + abs($g - $bg) + abs($b - $bb);
-                if ($dist < $tolerance) {
-                    $alpha = min(127, (int)(127 * $dist / $tolerance) + 64);
-                    imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $r, $g, $b, $alpha));
-                }
+    // Flood-fill background removal from all 4 edges
+    $tolerance = 50;
+    $visited   = [];
+    $queue     = [];
+    for ($x = 0; $x < $nw; $x++) { $queue[] = [$x, 0]; $queue[] = [$x, $nh - 1]; }
+    for ($y = 1; $y < $nh - 1; $y++) { $queue[] = [0, $y]; $queue[] = [$nw - 1, $y]; }
+
+    while (!empty($queue)) {
+        [$x, $y] = array_pop($queue);
+        $key = $x . ',' . $y;
+        if (isset($visited[$key])) continue;
+        $visited[$key] = true;
+        $c    = imagecolorat($out, $x, $y);
+        $r    = ($c >> 16) & 0xFF;
+        $g    = ($c >> 8)  & 0xFF;
+        $b    =  $c        & 0xFF;
+        $dist = abs($r - $br) + abs($g - $bg) + abs($b - $bb);
+        if ($dist > $tolerance) continue;
+        $alpha = min(127, (int)(127 * $dist / $tolerance) + 80);
+        imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $r, $g, $b, $alpha));
+        foreach ([[$x-1,$y],[$x+1,$y],[$x,$y-1],[$x,$y+1]] as [$nx,$ny]) {
+            if ($nx >= 0 && $nx < $nw && $ny >= 0 && $ny < $nh && !isset($visited["$nx,$ny"])) {
+                $queue[] = [$nx, $ny];
             }
         }
     }
