@@ -73,8 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="text-center mt-3 mb-0 text-muted">
           Nav konta? <a href="<?= SITE_URL ?>/pages/register.php" class="text-primary fw-semibold">Reģistrēties</a>
         </p>
-        <hr class="my-3">
-        <p class="text-center text-muted small mb-0">Demo: <code>admin@garderobe.lv</code> / <code>Admin123!</code></p>
       </div>
     </div>
   </div>
