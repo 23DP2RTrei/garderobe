@@ -173,15 +173,6 @@ require_once __DIR__ . '/../includes/header.php';
     <i class="bi bi-file-pdf me-2"></i>Eksportēt statistiku PDF
   </a>
 </div>
-<?php else: ?>
-<div class="premium-banner mt-4 d-flex align-items-center gap-3">
-  <i class="bi bi-stars flex-shrink-0" style="font-size:2rem;"></i>
-  <div>
-    <h5 class="fw-bold mb-1">Premium — PDF eksports</h5>
-    <p class="mb-0">Lejupielādējiet garderobes statistiku un pārskatu PDF formātā. Jautājiet administratoram par Premium aktivizāciju.</p>
-  </div>
-</div>
-<?php endif; ?>
 
 <?php if ($cats || $seasons): ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>

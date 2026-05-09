@@ -92,10 +92,7 @@ $pageTitle = 'Sākumlapa';
           <div class="feature-icon bg-warning bg-opacity-10">
             <i class="bi bi-stars text-warning"></i>
           </div>
-          <h5 class="fw-bold mb-2">
-            AI Ieteikumi
-            <span class="badge fw-semibold ms-1" style="background:#fef9c3;color:#854d0e;font-size:.6rem;border-radius:6px;">Premium</span>
-          </h5>
+          <h5 class="fw-bold mb-2">AI Ieteikumi</h5>
           <p class="text-muted mb-0">Personalizēti tērpu ieteikumi, balstoties uz sezonu, stilu un reālajiem laika apstākļiem Rīgā.</p>
         </div>
       </div>
@@ -125,10 +122,7 @@ $pageTitle = 'Sākumlapa';
           <div class="feature-icon" style="background:#f3e8ff;">
             <i class="bi bi-file-earmark-pdf" style="color:#7c3aed;"></i>
           </div>
-          <h5 class="fw-bold mb-2">
-            PDF eksports
-            <span class="badge fw-semibold ms-1" style="background:#fef9c3;color:#854d0e;font-size:.6rem;border-radius:6px;">Premium</span>
-          </h5>
+          <h5 class="fw-bold mb-2">PDF eksports</h5>
           <p class="text-muted mb-0">Lejupielādē garderobes pārskatu PDF formātā, lai to arhivētu vai dalītos ar citiem.</p>
         </div>
       </div>
@@ -156,7 +150,7 @@ $pageTitle = 'Sākumlapa';
       <i class="bi bi-bag-heart-fill me-1" style="color:#818cf8;"></i>
       <strong>Garderobe</strong>
     </p>
-    <small>Roberts Treijs &copy; 2026 &middot; Rīgas Valsts Tehnikums</small>
+    <small>Digitālā Garderobe &copy; 2026</small>
   </div>
 </footer>
 
