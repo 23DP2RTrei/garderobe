@@ -45,11 +45,9 @@
         <li class="nav-item">
           <a class="nav-link" href="<?= SITE_URL ?>/pages/stats.php"><i class="bi bi-bar-chart me-1"></i>Statistika</a>
         </li>
-        <?php if (isPremium()): ?>
         <li class="nav-item">
-          <a class="nav-link" href="<?= SITE_URL ?>/pages/ai.php" style="color:#fbbf24 !important;"><i class="bi bi-stars me-1"></i>AI Ieteikumi</a>
+          <a class="nav-link" href="<?= SITE_URL ?>/pages/ai.php"><i class="bi bi-stars me-1"></i>AI Ieteikumi</a>
         </li>
-        <?php endif; ?>
         <?php endif; ?>
       </ul>
 

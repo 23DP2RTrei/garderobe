@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
-if (!isPremium()) {
+if (false) {
     setFlash('error', 'Šī funkcija ir pieejama tikai Premium lietotājiem.');
     redirect(SITE_URL . '/pages/wardrobe.php');
 }

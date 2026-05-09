@@ -52,10 +52,7 @@ $cats->execute([$user['id']]);
 $allCategories = $cats->fetchAll(PDO::FETCH_COLUMN);
 
 $seasonLabels = ['spring'=>'Pavasaris','summer'=>'Vasara','autumn'=>'Rudens','winter'=>'Ziema','all'=>'Universāls'];
-$pageTitle = 'Mana garderobe';
-require_once __DIR__ . '/../includes/header.php';
-
-// DELETE
+// DELETE — pirms jebkāda HTML izvada
 if (isset($_GET['delete'])) {
     $del = $db->prepare("SELECT image_url FROM clothing WHERE id=? AND user_id=?");
     $del->execute([(int)$_GET['delete'], $user['id']]);
@@ -67,6 +64,9 @@ if (isset($_GET['delete'])) {
     setFlash('success', 'Apģērbs dzēsts.');
     redirect(SITE_URL . '/pages/wardrobe.php');
 }
+
+$pageTitle = 'Mana garderobe';
+require_once __DIR__ . '/../includes/header.php';
 
 // Build shared query string for pagination links
 function buildQ(array $override = []): string {

@@ -168,7 +168,6 @@ require_once __DIR__ . '/../includes/header.php';
 
 </div>
 
-<?php if (isPremium()): ?>
 <div class="mt-4 text-end">
   <a href="export_pdf.php" class="btn btn-warning fw-semibold">
     <i class="bi bi-file-pdf me-2"></i>Eksportēt statistiku PDF

@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
-if (!isPremium()) { setFlash('error','Tikai Premium.'); redirect(SITE_URL.'/pages/stats.php'); }
 $user = getCurrentUser();
 $db   = getDB();
 $uid  = $user['id'];
