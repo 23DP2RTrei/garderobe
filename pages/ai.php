@@ -129,7 +129,6 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="ai-header mb-4">
   <div class="ai-header-inner">
     <div>
-      <div class="ai-badge"><i class="bi bi-stars me-1"></i>Premium</div>
       <h1 class="ai-title">AI Tērpu ieteikumi</h1>
       <p class="ai-sub"><i class="bi <?= $seasonIcon ?> me-1"></i><?= $currentSeason ?></p>
     </div>
