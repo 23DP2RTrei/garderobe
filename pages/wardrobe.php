@@ -251,24 +251,34 @@ function wUrl() {
 </div>
 
 <!-- PAGINATION -->
-<?php if ($totalPages > 1): ?>
+<?php if ($totalPages > 1):
+  function pageUrl(int $p, string $cat, string $srch, string $seas, string $srt, string $fv): string {
+      $q = ['page' => $p];
+      if ($cat)            $q['category'] = $cat;
+      if ($srch)           $q['search']   = $srch;
+      if ($seas)           $q['season']   = $seas;
+      if ($srt !== 'newest') $q['sort']   = $srt;
+      if ($fv === '1')     $q['fav']      = '1';
+      return '?' . http_build_query($q);
+  }
+?>
 <nav class="mt-4 d-flex justify-content-center" aria-label="Lapas navigācija">
   <ul class="pagination gap-1">
     <?php if ($page > 1): ?>
     <li class="page-item">
-      <a class="page-link" href="?page=<?= $page-1 ?><?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $season ? '&season='.urlencode($season) : '' ?><?= $sort!=='newest' ? '&sort='.urlencode($sort) : '' ?><?= $fav ? '&fav=1' : '' ?>">
+      <a class="page-link" href="<?= pageUrl($page-1, $category, $search, $season, $sort, $fav) ?>">
         <i class="bi bi-chevron-left"></i>
       </a>
     </li>
     <?php endif; ?>
     <?php for ($i = max(1,$page-2); $i <= min($totalPages,$page+2); $i++): ?>
     <li class="page-item <?= $i===$page ? 'active' : '' ?>">
-      <a class="page-link" href="?page=<?= $i ?><?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $season ? '&season='.urlencode($season) : '' ?><?= $sort!=='newest' ? '&sort='.urlencode($sort) : '' ?><?= $fav ? '&fav=1' : '' ?>"><?= $i ?></a>
+      <a class="page-link" href="<?= pageUrl($i, $category, $search, $season, $sort, $fav) ?>"><?= $i ?></a>
     </li>
     <?php endfor; ?>
     <?php if ($page < $totalPages): ?>
     <li class="page-item">
-      <a class="page-link" href="?page=<?= $page+1 ?><?= $catQ ?><?= $search ? '&search='.urlencode($search) : '' ?><?= $season ? '&season='.urlencode($season) : '' ?><?= $sort!=='newest' ? '&sort='.urlencode($sort) : '' ?><?= $fav ? '&fav=1' : '' ?>">
+      <a class="page-link" href="<?= pageUrl($page+1, $category, $search, $season, $sort, $fav) ?>">
         <i class="bi bi-chevron-right"></i>
       </a>
     </li>
