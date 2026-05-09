@@ -9,7 +9,7 @@ if (isset($_POST['change_role'])) {
     verifyCSRF(SITE_URL . '/pages/admin.php');
     $uid  = (int)$_POST['uid'];
     $role = $_POST['role'] ?? 'user';
-    if ($uid !== (int)$user['id'] && in_array($role, ['user','premium','admin'])) {
+    if ($uid !== (int)$user['id'] && in_array($role, ['user','admin'])) {
         $db->prepare("UPDATE users SET role=? WHERE id=?")->execute([$role, $uid]);
         setFlash('success', 'Loma mainīta.');
     } else {
@@ -104,9 +104,8 @@ require_once __DIR__ . '/../includes/header.php';
             <input type="hidden" name="csrf_token" value="<?= generateCSRF() ?>">
             <input type="hidden" name="uid" value="<?= $u['id'] ?>">
             <select name="role" class="form-select form-select-sm" style="width:120px;">
-              <option value="user"    <?= $u['role']==='user'    ?'selected':'' ?>>Lietotājs</option>
-              <option value="premium" <?= $u['role']==='premium' ?'selected':'' ?>>Premium</option>
-              <option value="admin"   <?= $u['role']==='admin'   ?'selected':'' ?>>Admin</option>
+              <option value="user"  <?= $u['role']==='user'  ?'selected':'' ?>>Lietotājs</option>
+              <option value="admin" <?= $u['role']==='admin' ?'selected':'' ?>>Admin</option>
             </select>
             <button type="submit" name="change_role" class="btn btn-sm btn-primary">
               <i class="bi bi-check"></i>
