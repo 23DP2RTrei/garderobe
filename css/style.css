@@ -69,7 +69,11 @@ body {
   background: var(--surface-2);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+body > .container { flex: 1; }
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar       { width: 5px; height: 5px; }
