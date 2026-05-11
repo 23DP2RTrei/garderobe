@@ -1,15 +1,10 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
-if (false) {
-    setFlash('error', 'Šī funkcija ir pieejama tikai Premium lietotājiem.');
-    redirect(SITE_URL . '/pages/wardrobe.php');
-}
 $user = getCurrentUser();
 $db   = getDB();
 $uid  = $user['id'];
 
-// ── Laika apstākļi (Open-Meteo, Rīga) ──────────────────────────────────────
 $temp = $rainProb = $weatherCode = null;
 $weatherDesc = ''; $weatherIcon = 'bi-cloud';
 
@@ -38,7 +33,6 @@ if ($wJson) {
     };
 }
 
-// ── Ģenerēt ieteikumu ───────────────────────────────────────────────────────
 if (isset($_POST['generate'])) {
     verifyCSRF(SITE_URL . '/pages/ai.php');
 
@@ -46,7 +40,6 @@ if (isset($_POST['generate'])) {
     $season   = match(true) { $month<=2||$month==12=>'winter', $month<=5=>'spring', $month<=8=>'summer', default=>'autumn' };
     $seasonLV = ['spring'=>'pavasarī','summer'=>'vasarā','autumn'=>'rudenī','winter'=>'ziemā'][$season];
 
-    // Izvēlēties vienu apģērbu no katras kategorijas grupas
     $slotCats = [
         ['Cepure'],
         ['Jaka', 'Mētelis'],
@@ -88,7 +81,6 @@ if (isset($_POST['generate'])) {
             $text .= " Neliela lietus varbūtība ({$rainProb}%).";
         }
 
-        // Dzēst vecās, saglabāt tikai jauno
         $db->prepare("DELETE FROM ai_suggestions WHERE user_id=?")->execute([$uid]);
         $db->prepare("INSERT INTO ai_suggestions (user_id, suggestion_text, season, clothing_ids) VALUES (?,?,?,?)")
            ->execute([$uid, $text, $season, $clothingIds]);
@@ -98,7 +90,6 @@ if (isset($_POST['generate'])) {
     redirect(SITE_URL . '/pages/ai.php');
 }
 
-// ── Ielādēt pēdējo ieteikumu ────────────────────────────────────────────────
 $latest = $db->prepare("SELECT * FROM ai_suggestions WHERE user_id=? ORDER BY created_at DESC LIMIT 1");
 $latest->execute([$uid]);
 $latest = $latest->fetch();
@@ -146,7 +137,6 @@ require_once __DIR__ . '/../includes/header.php';
 
 <div class="row g-4">
 
-  <!-- ── LEFT: Generate button ── -->
   <div class="col-lg-4 col-md-5">
     <div class="card p-4 h-100 d-flex flex-column">
       <h5 class="fw-bold mb-1">Ģenerēt tērpu</h5>
@@ -168,7 +158,6 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
   </div>
 
-  <!-- ── RIGHT: Mini-fit preview ── -->
   <div class="col-lg-8 col-md-7">
     <?php if (empty($suggestedClothes)): ?>
     <div class="fit-empty">
@@ -207,7 +196,6 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
 
 <style>
-/* ── AI header ── */
 .ai-header { background: linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0e2050 100%); border-radius: 20px; padding: 1.75rem 2rem; color: #fff; }
 .ai-header-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .ai-badge { display: inline-block; background: rgba(251,191,36,.2); border: 1px solid rgba(251,191,36,.4); color: #fbbf24; border-radius: 20px; padding: 3px 12px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: .5rem; }
@@ -215,16 +203,13 @@ require_once __DIR__ . '/../includes/header.php';
 .ai-sub   { font-size: .875rem; opacity: .7; margin: 0; }
 .ai-weather-pill { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); border-radius: 16px; padding: .85rem 1.25rem; display: flex; align-items: center; gap: .75rem; color: #fff; min-width: 160px; }
 
-/* ── Generate button ── */
 .btn-generate { background: linear-gradient(135deg,#f6d365,#fda085); border: none; color: #1a1a1a; font-weight: 700; font-size: 1rem; padding: .85rem 1.5rem; border-radius: 14px; transition: all .2s; box-shadow: 0 4px 16px rgba(253,160,133,.4); }
 .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(253,160,133,.55); color: #1a1a1a; }
 
-/* ── Empty state ── */
 .fit-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 260px; color: var(--text-muted); text-align: center; gap: .75rem; border: 2px dashed var(--border); border-radius: 20px; padding: 2rem; }
 .fit-empty i { font-size: 3rem; opacity: .25; }
 .fit-empty p { margin: 0; font-size: .9rem; }
 
-/* ── Fit preview ── */
 .fit-preview { background: var(--surface); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-md); }
 
 .fit-stack { display: flex; flex-direction: column; }

@@ -1,7 +1,4 @@
 <?php
-// Datu bāzes savienojuma konfigurācija
-// Railway vides mainīgie tiek izmantoti automātiski; localhost — lokālai izstrādei
-
 define('DB_HOST',    getenv('MYSQLHOST')     ?: 'localhost');
 define('DB_PORT',    getenv('MYSQLPORT')     ?: '3306');
 define('DB_NAME',    getenv('MYSQLDATABASE') ?: 'garderobe');
@@ -26,7 +23,6 @@ function getDB() {
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
-            // Auto-migrācija: izveido tabulas un pievieno kolonnas, ja neeksistē
             $pdo->exec("CREATE TABLE IF NOT EXISTS users (
                 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                 name VARCHAR(100) NOT NULL,

@@ -121,7 +121,6 @@ function processClothingImage($srcPath, $mime, $destPath) {
     imagecopyresampled($out, $src, 0, 0, 0, 0, $nw, $nh, $ow, $oh);
     imagedestroy($src);
 
-    // Sample edge pixels to detect background color (any color)
     $samples = [];
     $step = max(1, (int)min($nw, $nh) / 16);
     for ($i = 0; $i < $nw; $i += $step) {
@@ -143,7 +142,6 @@ function processClothingImage($srcPath, $mime, $destPath) {
     $bg = (int)($bg / $n);
     $bb = (int)($bb / $n);
 
-    // Flood-fill background removal from all 4 edges
     $tolerance = 50;
     $visited   = [];
     $queue     = [];

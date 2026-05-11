@@ -52,7 +52,6 @@ $cats->execute([$user['id']]);
 $allCategories = $cats->fetchAll(PDO::FETCH_COLUMN);
 
 $seasonLabels = ['spring'=>'Pavasaris','summer'=>'Vasara','autumn'=>'Rudens','winter'=>'Ziema','all'=>'Universāls'];
-// DELETE — pirms jebkāda HTML izvada
 if (isset($_GET['delete'])) {
     $del = $db->prepare("SELECT image_url FROM clothing WHERE id=? AND user_id=?");
     $del->execute([(int)$_GET['delete'], $user['id']]);
@@ -68,7 +67,6 @@ if (isset($_GET['delete'])) {
 $pageTitle = 'Mana garderobe';
 require_once __DIR__ . '/../includes/header.php';
 
-// Build shared query string for pagination links
 function buildQ(array $override = []): string {
     global $search, $category, $season, $sort, $fav, $page;
     $base = array_filter([
@@ -84,7 +82,6 @@ function buildQ(array $override = []): string {
 }
 ?>
 
-<!-- APP BAR -->
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h1 class="app-title">Garderobe</h1>
@@ -95,7 +92,6 @@ function buildQ(array $override = []): string {
   </a>
 </div>
 
-<!-- FITTED TABS -->
 <div class="fitted-tabs-wrap mb-4">
   <div class="fitted-tabs">
     <a href="wardrobe.php" class="ftab active">Apģērbi</a>
@@ -104,7 +100,6 @@ function buildQ(array $override = []): string {
   </div>
 </div>
 
-<!-- SEARCH -->
 <form method="GET" id="filterForm" class="mb-3">
   <?php if ($category): ?><input type="hidden" name="category" value="<?= sanitize($category) ?>"><?php endif; ?>
   <?php if ($season):   ?><input type="hidden" name="season"   value="<?= sanitize($season) ?>"><?php endif; ?>
@@ -119,22 +114,18 @@ function buildQ(array $override = []): string {
   </div>
 </form>
 
-<!-- CATEGORY & SEASON PILLS -->
 <?php
-// Atsevišķi parametri — ērtākai URL celšanai
 $qSearch = $search   ? '&search='.urlencode($search)     : '';
 $qCat    = $category ? '&category='.urlencode($category) : '';
 $qSeason = $season   ? '&season='.urlencode($season)     : '';
 $qFav    = $fav      ? '&fav=1'                          : '';
 
-// Palīgfunkcija: savieno parametrus vienā URL
 function wUrl() {
     $q = ltrim(implode('', func_get_args()), '&');
     return 'wardrobe.php' . ($q ? '?' . $q : '');
 }
 ?>
 
-<!-- 1. rinda: Kategorijas -->
 <div class="filter-pills-wrap mb-2">
   <a href="<?= wUrl($qSearch, $qSeason, $qFav) ?>" class="fpill <?= !$category ? 'active' : '' ?>">Visi</a>
   <?php foreach ($allCategories as $cat): ?>
@@ -142,20 +133,16 @@ function wUrl() {
   <?php endforeach; ?>
 </div>
 
-<!-- 2. rinda: Sezonas + Mīļākie + Šķirošana -->
 <div class="filter-pills-wrap mb-4">
-  <!-- "Visas" atceļ sezonu filtru -->
   <a href="<?= wUrl($qCat, $qSearch, $qFav) ?>" class="fpill fpill-sm <?= !$season ? 'active' : '' ?>">Visas</a>
 
   <?php foreach ($seasonLabels as $k => $v):
     $isSeasonActive = ($season === $k);
-    // Aktīvs → klikšķis atceļ; neaktīvs → iestata šo sezonu
     $seasonHref = $isSeasonActive ? wUrl($qCat, $qSearch, $qFav) : wUrl('&season='.$k, $qCat, $qSearch, $qFav);
   ?>
   <a href="<?= $seasonHref ?>" class="fpill fpill-sm <?= $isSeasonActive ? 'active' : '' ?>"><?= $v ?></a>
   <?php endforeach; ?>
 
-  <!-- Mīļākie toggle: aktīvs → noņem fav; neaktīvs → pievieno -->
   <?php $favHref = ($fav === '1') ? wUrl($qCat, $qSearch, $qSeason) : wUrl('&fav=1', $qCat, $qSearch, $qSeason); ?>
   <a href="<?= $favHref ?>" class="fpill fpill-sm fpill-fav <?= $fav==='1' ? 'active' : '' ?>">
     <i class="bi bi-heart-fill me-1"></i>Mīļākie
@@ -168,7 +155,6 @@ function wUrl() {
   </select>
 </div>
 
-<!-- COUNT INFO -->
 <?php if ($totalFiltered > 0): ?>
 <div class="d-flex justify-content-between align-items-center mb-2">
   <small class="text-muted"><?= $totalFiltered ?> apģērbs(-i) atrasts(-i)</small>
@@ -178,7 +164,6 @@ function wUrl() {
 </div>
 <?php endif; ?>
 
-<!-- PIECES GRID -->
 <?php if (empty($clothes)): ?>
 <div class="empty-state">
   <i class="bi bi-bag-plus"></i>
@@ -250,7 +235,6 @@ function wUrl() {
   <?php endforeach; ?>
 </div>
 
-<!-- PAGINATION -->
 <?php if ($totalPages > 1):
   function pageUrl(int $p, string $cat, string $srch, string $seas, string $srt, string $fv): string {
       $q = ['page' => $p];
@@ -289,7 +273,6 @@ function wUrl() {
 
 <?php endif; ?>
 
-<!-- ADD MODAL -->
 <div class="modal fade" id="addModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -351,7 +334,6 @@ function wUrl() {
   </div>
 </div>
 
-<!-- EDIT MODAL -->
 <?php if (isset($_GET['edit'])):
   $editStmt = $db->prepare("SELECT * FROM clothing WHERE id=? AND user_id=?");
   $editStmt->execute([(int)$_GET['edit'], $user['id']]);
