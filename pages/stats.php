@@ -18,14 +18,6 @@ $wornC   = (int)$wornC->fetchColumn();
 $favC    = $db->prepare("SELECT COUNT(*) FROM clothing WHERE user_id=? AND is_favorite=1"); $favC->execute([$uid]);
 $favC    = (int)$favC->fetchColumn();
 
-// Kategoriju sadalījums
-$cats = $db->prepare("SELECT category, COUNT(*) as cnt FROM clothing WHERE user_id=? GROUP BY category ORDER BY cnt DESC");
-$cats->execute([$uid]); $cats = $cats->fetchAll();
-
-// Sezonu sadalījums
-$seasons = $db->prepare("SELECT season, COUNT(*) as cnt FROM clothing WHERE user_id=? GROUP BY season ORDER BY cnt DESC");
-$seasons->execute([$uid]); $seasons = $seasons->fetchAll();
-
 // Top kombinācijas
 $topOutfits = $db->prepare("SELECT name, times_worn FROM outfits WHERE user_id=? ORDER BY times_worn DESC LIMIT 5");
 $topOutfits->execute([$uid]); $topOutfits = $topOutfits->fetchAll();
@@ -37,8 +29,6 @@ $colors->execute([$uid]); $colors = $colors->fetchAll();
 // Pēdējie pievienotie apģērbi
 $recent = $db->prepare("SELECT name, category, created_at FROM clothing WHERE user_id=? ORDER BY created_at DESC LIMIT 5");
 $recent->execute([$uid]); $recent = $recent->fetchAll();
-
-$seasonLabels = ['spring'=>'Pavasaris','summer'=>'Vasara','autumn'=>'Rudens','winter'=>'Ziema','all'=>'Universāls'];
 
 $pageTitle = 'Statistika';
 require_once __DIR__ . '/../includes/header.php';
@@ -78,32 +68,8 @@ require_once __DIR__ . '/../includes/header.php';
 
 <div class="row g-4">
 
-  <!-- KATEGORIJAS GRAFIKS -->
-  <div class="col-lg-4 col-md-6">
-    <div class="card p-4 h-100">
-      <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill me-2 text-primary"></i>Kategoriju sadalījums</h5>
-      <?php if ($cats): ?>
-      <canvas id="catChart" height="200"></canvas>
-      <?php else: ?>
-      <p class="text-muted">Nav datu.</p>
-      <?php endif; ?>
-    </div>
-  </div>
-
-  <!-- SEZONAS GRAFIKS -->
-  <div class="col-lg-4 col-md-6">
-    <div class="card p-4 h-100">
-      <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart-fill me-2 text-warning"></i>Sezonu sadalījums</h5>
-      <?php if ($seasons): ?>
-      <canvas id="seasonChart" height="200"></canvas>
-      <?php else: ?>
-      <p class="text-muted">Nav datu.</p>
-      <?php endif; ?>
-    </div>
-  </div>
-
-  <!-- TOP KOMBINĀCIJAS — pārvietots augšup, blakus grafikiem -->
-  <div class="col-lg-4 col-md-12">
+  <!-- TOP KOMBINĀCIJAS -->
+  <div class="col-md-4">
     <div class="card p-4 h-100">
       <h5 class="fw-bold mb-3"><i class="bi bi-trophy me-2 text-warning"></i>Populārākās kombinācijas</h5>
       <?php if ($topOutfits): ?>
@@ -121,29 +87,6 @@ require_once __DIR__ . '/../includes/header.php';
       </table>
       <?php else: ?>
       <p class="text-muted">Vēl nav nevienas kombinācijas.</p>
-      <?php endif; ?>
-    </div>
-  </div>
-
-  <!-- PĒDĒJIE PIEVIENOTIE -->
-  <div class="col-md-8">
-    <div class="card p-4 h-100">
-      <h5 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-info"></i>Pēdējie pievienotie</h5>
-      <?php if ($recent): ?>
-      <table class="table table-hover mb-0">
-        <thead><tr><th>Nosaukums</th><th>Kategorija</th><th>Pievienots</th></tr></thead>
-        <tbody>
-        <?php foreach ($recent as $r): ?>
-        <tr>
-          <td><?= sanitize($r['name']) ?></td>
-          <td><?= sanitize($r['category']) ?></td>
-          <td class="text-muted"><?= date('d.m.Y', strtotime($r['created_at'])) ?></td>
-        </tr>
-        <?php endforeach; ?>
-        </tbody>
-      </table>
-      <?php else: ?>
-      <p class="text-muted">Nav datu.</p>
       <?php endif; ?>
     </div>
   </div>
@@ -166,6 +109,29 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
   </div>
 
+  <!-- PĒDĒJIE PIEVIENOTIE -->
+  <div class="col-md-4">
+    <div class="card p-4 h-100">
+      <h5 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-info"></i>Pēdējie pievienotie</h5>
+      <?php if ($recent): ?>
+      <table class="table table-hover mb-0">
+        <thead><tr><th>Nosaukums</th><th>Kategorija</th><th>Pievienots</th></tr></thead>
+        <tbody>
+        <?php foreach ($recent as $r): ?>
+        <tr>
+          <td><?= sanitize($r['name']) ?></td>
+          <td><?= sanitize($r['category']) ?></td>
+          <td class="text-muted"><?= date('d.m.Y', strtotime($r['created_at'])) ?></td>
+        </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+      <?php else: ?>
+      <p class="text-muted">Nav datu.</p>
+      <?php endif; ?>
+    </div>
+  </div>
+
 </div>
 
 <div class="mt-4 text-end">
@@ -174,72 +140,5 @@ require_once __DIR__ . '/../includes/header.php';
   </a>
 </div>
 
-<?php if ($cats || $seasons): ?>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-(function() {
-  var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-  var textColor = isDark ? '#94a3b8' : '#6c757d';
-  var gridColor = isDark ? 'rgba(148,163,184,.15)' : 'rgba(0,0,0,.07)';
-  Chart.defaults.color = textColor;
-
-  <?php if ($cats): ?>
-  new Chart(document.getElementById('catChart'), {
-    type: 'bar',
-    data: {
-      labels: <?= json_encode(array_column($cats, 'category')) ?>,
-      datasets: [{
-        label: 'Apģērbi',
-        data:  <?= json_encode(array_column($cats, 'cnt')) ?>,
-        backgroundColor: 'rgba(108,99,255,.75)',
-        borderColor: '#6c63ff',
-        borderWidth: 1.5,
-        borderRadius: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: gridColor }, ticks: { color: textColor } },
-        y: { grid: { color: gridColor }, ticks: { color: textColor, precision: 0 }, beginAtZero: true }
-      }
-    }
-  });
-  <?php endif; ?>
-
-  <?php if ($seasons):
-    $seasonColors = ['spring'=>'#28a745','summer'=>'#fd7e14','autumn'=>'#e8446a','winter'=>'#4e9af1','all'=>'#9f7aea'];
-    $sLabels = []; $sCounts = []; $sColors = [];
-    foreach ($seasons as $r) {
-      $sLabels[] = $seasonLabels[$r['season']] ?? $r['season'];
-      $sCounts[] = $r['cnt'];
-      $sColors[] = $seasonColors[$r['season']] ?? '#6c63ff';
-    }
-  ?>
-  new Chart(document.getElementById('seasonChart'), {
-    type: 'doughnut',
-    data: {
-      labels: <?= json_encode($sLabels) ?>,
-      datasets: [{
-        data: <?= json_encode($sCounts) ?>,
-        backgroundColor: <?= json_encode($sColors) ?>,
-        borderWidth: 2,
-        borderColor: isDark ? '#1e293b' : '#fff',
-        hoverOffset: 8
-      }]
-    },
-    options: {
-      responsive: true,
-      cutout: '62%',
-      plugins: {
-        legend: { position: 'bottom', labels: { color: textColor, padding: 14, font: { size: 12 } } }
-      }
-    }
-  });
-  <?php endif; ?>
-})();
-</script>
-<?php endif; ?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
