@@ -34,11 +34,10 @@ Tīmekļa lietojumprogramma apģērbu katalogēšanai, tērpu kombināciju veido
 - Kombināciju saglabāšana un valkāšanas reižu skaitīšana
 - Statistika ar Chart.js grafikiem (joslu, donut)
 - Profila rediģēšana un paroles maiņa
-
-### Premium
-- AI tērpu ieteikumi balstoties uz sezonu un reāliem laikapstākļiem
+- - AI tērpu ieteikumi balstoties uz sezonu un reāliem laikapstākļiem
 - Vizuāls "mini-fit" apģērbu priekšskatījums
 - PDF eksports ar pilnu garderobes pārskatu
+
 
 ### Administrators
 - Visu lietotāju pārskatīšana
